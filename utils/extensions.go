@@ -48,5 +48,9 @@ func FillExtension() map[string][]string {
 	compressed := []string{"zip","ZIP"}
 	extensions["compressed"] = compressed
 
+	//gif
+	gif := []string{ "GIF", "gif"}
+	extensions["gif"] = gif
+
 	return extensions
 }
