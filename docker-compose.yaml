@@ -1,0 +1,33 @@
+# Docker compose file to start minio object storage server and persistent volumes
+version: '3'
+services: 
+  minio:
+    image: minio/minio
+    container_name: minio-object-storage
+    volumes:
+      - data-minio:/data
+    ports:
+      - 9000:9000
+    # environment:
+    #   MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+    #   MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+    env_file: 
+       - ./.env
+    command: server --address 0.0.0.0:9000 /data
+  minio-file-server: 
+    image: golang-minio-file-server
+    container_name: minio-file-server
+    volumes: 
+      - data-minio:/root/data-minio
+    ports: 
+      - 8081:8081
+    env_file: 
+      - ./.env
+volumes:
+  data-minio:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      # change if nessecery /home/${local machine name}/data-minio
+      device: '/home/louisaldorio/data-minio'
