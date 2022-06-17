@@ -8,8 +8,8 @@ import (
 	"os"
 )
 
-func ServeImage(path string) string {
-	return fmt.Sprintf("%s/%s",os.Getenv("SERVE_ENDPOINT"), path)
+func ServeImage(path string, bucketName string) string {
+	return fmt.Sprintf("%s/%s/%s",os.Getenv("SERVE_ENDPOINT"), bucketName, path)
 }
 
 func Serve(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +25,7 @@ func Serve(w http.ResponseWriter, r *http.Request) {
 
 	for _,v := range paths.Paths{
 		response = append(response, model.Attachment{
-			ServeLink: ServeImage(v),
+			ServeLink: ServeImage(v, "portfolio"),
 		})
 	}
 

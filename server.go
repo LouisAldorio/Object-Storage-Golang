@@ -5,7 +5,6 @@ import (
 	"log"
 	"myapp/service"
 	"net/http"
-	"os"
 	"os/user"
 
 	"github.com/gorilla/mux"
@@ -23,12 +22,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	dockerVolumeDir := usr.HomeDir + "/data-minio/" + os.Getenv("BUCKET_NAME")
+	// dockerVolumeDir := usr.HomeDir + "/data-minio/" + os.Getenv("BUCKET_NAME")
+	dockerVolumeDir := usr.HomeDir + "/data-minio/"
 	fmt.Println(dockerVolumeDir)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/upload", service.UploadFile).Methods("POST")
-	router.HandleFunc("/serve",service.Serve)
+	router.HandleFunc("/serve", service.Serve)
 	router.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir(dockerVolumeDir))))
 
 	log.Println("Listening on 8081")

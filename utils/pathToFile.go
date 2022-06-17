@@ -14,7 +14,8 @@ import (
 func PathToFile(fullPath string, fileType string) ([]*graphql.Upload, error) {
 	var filePack []*graphql.Upload
 
-	filename := strings.Split(fullPath, "/")[1]
+	filename := strings.Split(fullPath, "/")[len(strings.Split(fullPath, "/"))-1]
+	fmt.Println(filename)
 
 	fileName := fullPath
 	pdfFileOpen, err := os.Open(fileName)
@@ -41,6 +42,8 @@ func PathToFile(fullPath string, fileType string) ([]*graphql.Upload, error) {
 
 	fileSize := fileStatus.Size()
 
+	fmt.Println(fileName, "asd")
+
 	tempFile := graphql.Upload{
 		File:        r,
 		Filename:    filename,
@@ -49,6 +52,8 @@ func PathToFile(fullPath string, fileType string) ([]*graphql.Upload, error) {
 	}
 
 	filePack = append(filePack, &tempFile)
+
+	fmt.Println(filePack[0].Filename)
 
 	return filePack, nil
 }

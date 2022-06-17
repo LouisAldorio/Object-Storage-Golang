@@ -72,17 +72,19 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 	fullPath := UploadLocal("storage/", FileName, UploadedExtension, file)
 	width, height := 0, 0
 
+	fmt.Println(fullPath)
+
 	if key == "photo" {
 		width, height = utils.FPB(utils.GetImageDimension(fullPath))
-		ResizeImage(fullPath,UploadedExtension)
+		ResizeImage(fullPath, UploadedExtension)
 	}
-	link, remoteFilePaath := UploadDO(fullPath, remotePath, handler.Header.Get("Content-Type"))
+	link, remoteFilePaath := UploadDO(fullPath, remotePath, handler.Header.Get("Content-Type"), r.FormValue("BucketName"))
 
 	w.Header().Set("Content-Disposition", "attachment; filename="+handler.Filename)
 	json.NewEncoder(w).Encode(model.ResponseJson{
 		Status: true,
 		Data: []model.Attachment{
-			model.Attachment{
+			{
 				ServeLink: link,
 				Path:      remoteFilePaath,
 				Width:     width,
@@ -93,10 +95,11 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func UploadDO(fullPath string, remotePath string, fileType string) (string, string) {
+func UploadDO(fullPath string, remotePath string, fileType string, bucketName string) (string, string) {
 	var endPoint string = os.Getenv("MINIO_SERVER_ENDPOINT")
 	var accessKeyID = os.Getenv("MINIO_ACCESS_KEY")
 	var secretAccessKey = os.Getenv("MINIO_SECRET_KEY")
+	fmt.Println(fullPath)
 	file, _ := utils.PathToFile(fullPath, fileType)
 
 	minioClient, err := minio.New(endPoint, accessKeyID, secretAccessKey, useSSL)
@@ -104,11 +107,17 @@ func UploadDO(fullPath string, remotePath string, fileType string) (string, stri
 		fmt.Println(err)
 	}
 
-	bucketName := os.Getenv("BUCKET_NAME")
+	if bucketName == "" {
+		bucketName = "portfolio"
+	}
+
+	// bucketNames := os.Getenv("BUCKET_NAME")
 	objectName := fullPath
 	contentType := fmt.Sprintf("application/%s", file[0].ContentType)
 	retainDate := time.Now().AddDate(0, 1, 0)
 	remoteFilePath := remotePath + "/" + file[0].Filename
+	fmt.Println(minioClient.ListBuckets())
+	fmt.Println(bucketName, remoteFilePath, objectName, minioClient, file[0].Filename)
 	_, err = minioClient.FPutObject(bucketName, remoteFilePath, objectName, minio.PutObjectOptions{
 		ContentType: contentType,
 		UserTags: map[string]string{
@@ -124,7 +133,7 @@ func UploadDO(fullPath string, remotePath string, fileType string) (string, stri
 	// 	log.Fatal(e)
 
 	// }
-	return ServeImage(remoteFilePath), remoteFilePath
+	return ServeImage(remoteFilePath, bucketName), remoteFilePath
 }
 
 // if remotePath != "photo" {
